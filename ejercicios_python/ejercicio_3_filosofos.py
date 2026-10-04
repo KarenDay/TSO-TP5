@@ -14,6 +14,7 @@ import time
 import random
 
 NUM_FILOSOFOS = 5
+mozo = threading.Semaphore(NUM_FILOSOFOS - 1)
 # Cada tenedor está representado por un Lock (exclusión mutua)
 tenedores = [threading.Lock() for _ in range(NUM_FILOSOFOS)]
 
@@ -68,6 +69,18 @@ def filosofo(id, rondas=3):
         #
         # TODO: Adquiere los tenedores adyacentes de forma segura, invoca comer(id)
         # y libera los tenedores:
+        tenedor_izq = id
+        tenedor_der = (id + 1) % NUM_FILOSOFOS
+        
+        # Solicita permiso al mozo/árbitro para sentarse
+        mozo.acquire()
+        try:
+            with tenedores[tenedor_izq]:
+                with tenedores[tenedor_der]:
+                    comer(id)
+        finally:
+            # Libera el lugar en la mesa para otro filósofo
+            mozo.release()
         pass
         # =========================================================================
         # FIN TODO
